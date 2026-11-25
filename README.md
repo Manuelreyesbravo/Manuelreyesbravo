@@ -14,8 +14,8 @@ whatever it asks. [pg_agent_gate](https://github.com/Manuelreyesbravo/pg_agent_g
 that inside the database: a session that belongs to an agent can do nothing but propose one
 statement, and PostgreSQL verifies it against its own parser and planner before anything runs.
 Direct SQL, DDL, cursors, writing CTEs — everything but the verbs is refused by parser and
-executor hooks. `make verify` runs 164 attacks on a fresh cluster, each judged from a
-superuser's side of the database, and passes.
+executor hooks. `make verify` runs 592 checks on a fresh cluster, each judged from a
+superuser's side of the database, and passes on PostgreSQL 18 and 19.0 in CI.
 
 [agent-gate-demo](https://github.com/Manuelreyesbravo/agent-gate-demo) reproduces it on a free
 CI runner, no GPU: a plain 8B model does everyday and hard database operations correctly, and
@@ -24,8 +24,8 @@ have to trust the model, because PostgreSQL checks it. Verified, not claimed: fo
 
 ## PostgreSQL extensions
 
-Five more, all on [PGXN](https://pgxn.org/). All **pure SQL, no shared library**, so they
-install on RDS, Aurora and Supabase, where extensions written in C cannot go.
+Six more, all on [PGXN](https://pgxn.org/user/manu15/). Five are **pure SQL, no shared
+library**, so they install on RDS, Aurora and Supabase, where extensions written in C cannot go.
 
 | Extension | What it watches |
 |---|---|
@@ -35,12 +35,16 @@ install on RDS, Aurora and Supabase, where extensions written in C cannot go.
 | [pg_grammar_guard](https://github.com/Manuelreyesbravo/pg_grammar_guard) | Compiles a token-level grammar from your live catalog, and watches it for drift. |
 | [pg_living_assertions](https://github.com/Manuelreyesbravo/pg_living_assertions) | A registry of things you claim are true, with the SQL that proves them and the date they were last proven. |
 
+The sixth, [pg_phasevec](https://github.com/Manuelreyesbravo/pg_phasevec), is in C: readings
+with provenance next to each row, so a vector search answers only from embeddings that still
+match the row they were taken from, and says which ones went stale.
+
 Every one of them ships a regression suite that runs with `make installcheck`, and each
 was tested against more than one PostgreSQL major version before release.
 
 ## Upstream
 
-I run the PostgreSQL 19 beta in production and port what I depend on to it —
+PostgreSQL 19 has run in production here since its first beta, and I port what I depend on to it —
 **pgvectorscale** runs here behind 30 vector and full-text indexes in daily use. Fixes and
 reports go back to the projects I rely on.
 
